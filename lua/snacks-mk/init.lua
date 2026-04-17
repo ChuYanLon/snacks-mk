@@ -1,3 +1,5 @@
+local M = {}
+
 local function get_dirs_cmd(opts, filter)
   local use_fd = vim.fn.executable("fd") == 1 or vim.fn.executable("fdfind") == 1
   local cmd = use_fd and (vim.fn.executable("fd") == 1 and "fd" or "fdfind") or "find"
@@ -53,15 +55,6 @@ local function directories_finder(opts, ctx)
   )
 end
 
-Snacks.picker.sources = Snacks.picker.sources or {}
-Snacks.picker.sources.directories = {
-  finder = directories_finder,
-  format = "file",
-  supports_live = true,
-  hidden = true,
-  show_empty = true,
-}
-
 local function create_files_or_dirs(base_dir, input_str)
   if not input_str or input_str == "" then
     return
@@ -81,7 +74,7 @@ local function create_files_or_dirs(base_dir, input_str)
       -- Create directory
       local dir_path = target:sub(1, -2)
       vim.fn.mkdir(dir_path, "p")
-      print("Created directory: " .. vim.fn.fnamemodify(dir_path, ":~:."))
+      vim.notify("Created directory: " .. vim.fn.fnamemodify(dir_path, ":~:."))
     else
       -- Create file
       local parent = vim.fn.fnamemodify(target, ":h")
@@ -91,38 +84,51 @@ local function create_files_or_dirs(base_dir, input_str)
         if f then
           f:close()
         end
-        print("Created file: " .. vim.fn.fnamemodify(target, ":~:."))
+        vim.notify("Created file: " .. vim.fn.fnamemodify(target, ":~:."))
       else
-        print("File already exists: " .. vim.fn.fnamemodify(target, ":~:."))
+        vim.notify("File already exists: " .. vim.fn.fnamemodify(target, ":~:."))
       end
     end
     ::continue::
   end
 end
 
-vim.api.nvim_create_user_command("CreateInDir", function()
-  Snacks.picker.directories({
-    confirm = function(picker, item)
-      picker:close()
-      if not item or not item.file then
-        return
-      end
-      local base_dir = item.file
-      vim.ui.input({
-        prompt = 'Create (file or dir/): use "," to separate',
-        default = "",
-        completion = "file",
-      }, function(input)
-        if input then
-          create_files_or_dirs(base_dir, input)
+function M.setup()
+  Snacks.picker.sources = Snacks.picker.sources or {}
+  Snacks.picker.sources.directories = {
+    finder = directories_finder,
+    format = "file",
+    supports_live = true,
+    hidden = true,
+    show_empty = true,
+  }
+
+  vim.api.nvim_create_user_command("CreateInDir", function()
+    Snacks.picker.directories({
+      confirm = function(picker, item)
+        picker:close()
+        if not item or not item.file then
+          return
         end
-        vim.schedule(function()
-          vim.cmd("stopinsert")
+        local base_dir = item.file
+        vim.ui.input({
+          prompt = 'Create (file or dir/): use "," to separate',
+          default = "",
+          completion = "file",
+        }, function(input)
+          if input then
+            create_files_or_dirs(base_dir, input)
+          end
+          vim.schedule(function()
+            vim.cmd("stopinsert")
+          end)
         end)
-      end)
-      vim.schedule(function()
-        vim.cmd("startinsert!")
-      end)
-    end,
-  })
-end, { desc = "Choose a directory and create files/folders inside it" })
+        vim.schedule(function()
+          vim.cmd("startinsert!")
+        end)
+      end,
+    })
+  end, { desc = "Choose a directory and create files/folders inside it" })
+end
+
+return M
