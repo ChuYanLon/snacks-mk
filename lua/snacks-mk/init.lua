@@ -55,12 +55,13 @@ local function directories_finder(opts, ctx)
   )
 end
 
-local function create_files_or_dirs(base_dir, input_str)
+local function create_files_or_dirs(base_dir, input_str, opts)
   if not input_str or input_str == "" then
     return
   end
 
   local items = vim.split(input_str, ",", { trimempty = true })
+  local created_files = {}
 
   for _, item in ipairs(items) do
     item = vim.trim(item)
@@ -85,18 +86,36 @@ local function create_files_or_dirs(base_dir, input_str)
           f:close()
         end
         vim.notify("Created file: " .. vim.fn.fnamemodify(target, ":~:."))
+        table.insert(created_files, target)
       else
         vim.notify("File already exists: " .. vim.fn.fnamemodify(target, ":~:."))
       end
     end
     ::continue::
   end
+
+  -- Open the first created file if requested
+  if opts and opts.open_file and #created_files > 0 then
+    vim.schedule(function()
+      vim.cmd("edit " .. vim.fn.fnameescape(created_files[1]))
+    end)
+  end
 end
 
-function M.setup()
+local default_config = {
+  exclude = { "node_modules", "target", "build", "dist", ".venv", "__pycache__" },
+  live = true,
+  open_file = true,
+}
+
+function M.setup(opts)
+  local config = vim.tbl_deep_extend("force", default_config, opts or {})
+
   Snacks.picker.sources = Snacks.picker.sources or {}
   Snacks.picker.sources.directories = {
-    finder = directories_finder,
+    finder = function(picker_opts, ctx)
+      return directories_finder(vim.tbl_extend("force", picker_opts, { exclude = config.exclude, live = config.live }), ctx)
+    end,
     format = "file",
     supports_live = true,
     hidden = true,
@@ -117,7 +136,7 @@ function M.setup()
           completion = "file",
         }, function(input)
           if input then
-            create_files_or_dirs(base_dir, input)
+            create_files_or_dirs(base_dir, input, { open_file = config.open_file })
           end
           vim.schedule(function()
             vim.cmd("stopinsert")

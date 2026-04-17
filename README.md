@@ -6,6 +6,7 @@ A Neovim plugin for creating files and directories with ease, integrated with th
 
 - **Directory Navigation**: Browse directories using `fd`/`fdfind` or `find` command
 - **Batch Creation**: Create multiple files and directories at once using comma-separated input
+- **Auto-open Files**: Automatically opens the first created file in Neovim
 - **Smart Filtering**: Automatically excludes common directories like `node_modules`, `build`, `dist`, etc.
 - **Live Search**: Real-time directory filtering as you type
 - **Intuitive Interface**: Simple command-based workflow
@@ -58,9 +59,39 @@ When prompted, you can create:
 ```
 
 This creates:
-- `~/projects/my-app/main.lua`
+- `~/projects/my-app/main.lua` (and automatically opens it in Neovim)
 - `~/projects/my-app/src/` (directory)
 - `~/projects/my-app/tests/test_suite.lua` (with parent directory `tests/`)
+
+## Configuration
+
+The plugin can be configured by passing options to the `setup()` function:
+
+```lua
+require("snacks-mk").setup({
+  exclude = {
+    "node_modules",
+    "target",
+    "build", 
+    "dist",
+    ".venv",
+    "__pycache__",
+    -- Add your own exclusions
+  },
+  live = true,           -- Enable/disable live search
+  open_file = true,      -- Automatically open the first created file
+})
+```
+
+### Default Exclusions
+
+By default, the following directories are excluded from the picker:
+- `node_modules`
+- `target`
+- `build`
+- `dist`
+- `.venv`
+- `__pycache__`
 
 ## Dependencies
 
