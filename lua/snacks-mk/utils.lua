@@ -1,6 +1,6 @@
 local M = {}
 
-local ROOT_NAME = "/ (root)"
+local ROOT_NAME = "."
 
 function M.get_dirs_cmd(opts, filter)
   local use_fd = vim.fn.executable("fd") == 1 or vim.fn.executable("fdfind") == 1

@@ -3,7 +3,7 @@ local M = {}
 local config = require("snacks-mk.config")
 local utils = require("snacks-mk.utils")
 
-local ROOT_NAME = "/ (root)"
+local ROOT_NAME = "."
 
 function M.directories_finder(opts, ctx)
 	local cwd = utils.normalize_path(opts.cwd or utils.get_cwd())
@@ -21,7 +21,7 @@ function M.directories_finder(opts, ctx)
 				item.dir = true
 				if item.text == ROOT_NAME then
 					item.display_text = ROOT_NAME
-					item.file = "."
+					item.file = ROOT_NAME
 				else
 					item.display_text = item.text
 					item.file = item.text
