@@ -41,10 +41,21 @@ function M.create_files_or_dirs(base_dir, input_str, opts)
     ::continue::
   end
 
-  -- Open the first created file if requested
+  -- Open created files if requested
   if opts and opts.open_file and #created_files > 0 then
     vim.schedule(function()
-      vim.cmd("edit " .. vim.fn.fnameescape(created_files[1]))
+      if opts.open_all_files then
+        -- Open all created files
+        vim.cmd("edit " .. vim.fn.fnameescape(created_files[1]))
+        
+        -- Open remaining files in new buffers
+        for i = 2, #created_files do
+          vim.cmd("badd " .. vim.fn.fnameescape(created_files[i]))
+        end
+      else
+        -- Only open the first file (backward compatibility)
+        vim.cmd("edit " .. vim.fn.fnameescape(created_files[1]))
+      end
     end)
   end
 end

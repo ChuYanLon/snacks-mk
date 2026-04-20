@@ -63,9 +63,15 @@ function M.create_in_dir()
           if base_dir == ROOT_NAME then
             local cwd = utils.get_cwd()
             local path = utils.get_relative_path(cwd)
-            creator.create_files_or_dirs(path .. "/", input, { open_file = cfg.open_file })
+            creator.create_files_or_dirs(path .. "/", input, { 
+              open_file = cfg.open_file,
+              open_all_files = cfg.open_all_files 
+            })
           else
-            creator.create_files_or_dirs(base_dir, input, { open_file = cfg.open_file })
+            creator.create_files_or_dirs(base_dir, input, { 
+              open_file = cfg.open_file,
+              open_all_files = cfg.open_all_files 
+            })
           end
         end
         vim.schedule(function()

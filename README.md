@@ -63,6 +63,8 @@ This creates:
 - `~/projects/my-app/src/` (directory)
 - `~/projects/my-app/tests/test_suite.lua` (with parent directory `tests/`)
 
+By default, all created files will be opened in Neovim buffers. The first file opens in the current window, and subsequent files are added as hidden buffers. You can control this behavior with the `open_all_files` configuration option.
+
 ## Configuration
 
 The plugin can be configured by passing options to the `setup()` function:
@@ -79,7 +81,8 @@ require("snacks-mk").setup({
     -- Add your own exclusions
   },
   live = true,           -- Enable/disable live search
-  open_file = true,      -- Automatically open the first created file
+  open_file = true,      -- Automatically open created files
+  open_all_files = true, -- Open all created files (when open_file is true)
 })
 ```
 

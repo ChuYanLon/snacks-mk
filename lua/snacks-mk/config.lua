@@ -4,6 +4,7 @@ local default_config = {
   exclude = { "node_modules", "target", "build", "dist", ".venv", "__pycache__" },
   live = true,
   open_file = true,
+  open_all_files = true,
 }
 
 M.config = vim.deepcopy(default_config)
