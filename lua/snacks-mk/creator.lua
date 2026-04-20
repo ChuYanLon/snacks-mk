@@ -16,7 +16,9 @@ function M.create_files_or_dirs(base_dir, input_str, opts)
       goto continue
     end
 
-    local target = utils.normalize_path(base_dir .. "/" .. item)
+    -- Remove trailing slash from base_dir if present to avoid double slashes
+    local clean_base_dir = base_dir:gsub("/+$", "")
+    local target = utils.normalize_path(clean_base_dir .. "/" .. item)
 
     if utils.is_directory_path(item) then
       -- Create directory
