@@ -22,15 +22,15 @@ function M.directories_finder(opts, ctx)
 
 				-- Separate display text from file path
 				if item.text == ROOT_NAME then
-					-- For root directory, display ROOT_NAME but use actual cwd as file path
-					-- Ensure the path ends with a slash for proper concatenation in creator
-					item.file = cwd .. "/"
+					-- For root directory, display ROOT_NAME
 					item.display_text = ROOT_NAME
+					-- Use empty string or "." as file path to avoid double path concatenation
+					-- The actual path will be handled in create_in_dir function
+					item.file = "."
 				else
 					-- For regular directories, use the text as both display and file path
-					-- Ensure the path ends with a slash for proper concatenation in creator
-					item.file = item.text .. "/"
 					item.display_text = item.text
+					item.file = item.text
 				end
 			end,
 		}),
@@ -64,7 +64,17 @@ function M.create_in_dir()
 			if not item or not item.file then
 				return
 			end
-			local base_dir = item.file
+
+			-- Determine the actual base directory
+			local base_dir
+			if item.display_text == ROOT_NAME then
+				-- For root directory, use current working directory
+				base_dir = utils.get_cwd() .. "/"
+			else
+				-- For regular directories, use the file path
+				base_dir = item.file .. "/"
+			end
+
 			vim.ui.input({
 				prompt = 'Create (file or dir/): use "," to separate',
 				default = "",
