@@ -19,16 +19,10 @@ function M.directories_finder(opts, ctx)
 			transform = function(item)
 				item.cwd = cwd
 				item.dir = true
-
-				-- Separate display text from file path
 				if item.text == ROOT_NAME then
-					-- For root directory, display ROOT_NAME
 					item.display_text = ROOT_NAME
-					-- Use empty string or "." as file path to avoid double path concatenation
-					-- The actual path will be handled in create_in_dir function
 					item.file = "."
 				else
-					-- For regular directories, use the text as both display and file path
 					item.display_text = item.text
 					item.file = item.text
 				end
@@ -65,13 +59,10 @@ function M.create_in_dir()
 				return
 			end
 
-			-- Determine the actual base directory
 			local base_dir
 			if item.display_text == ROOT_NAME then
-				-- For root directory, use current working directory
 				base_dir = utils.get_cwd() .. "/"
 			else
-				-- For regular directories, use the file path
 				base_dir = item.file .. "/"
 			end
 
