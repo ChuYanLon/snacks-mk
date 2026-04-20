@@ -1,5 +1,7 @@
 local M = {}
 
+local ROOT_NAME = "/ (root)"
+
 local function get_dirs_cmd(opts, filter)
   local use_fd = vim.fn.executable("fd") == 1 or vim.fn.executable("fdfind") == 1
   local cmd = use_fd and (vim.fn.executable("fd") == 1 and "fd" or "fdfind") or "find"
@@ -29,8 +31,17 @@ local function get_dirs_cmd(opts, filter)
       table.insert(args, filter.search)
     end
   end
+  local base_cmd = cmd
 
-  return cmd, args
+  local escaped_args = {}
+
+  for _, arg in ipairs(args) do
+    table.insert(escaped_args, vim.fn.shellescape(arg))
+  end
+
+  local cmd_str = base_cmd .. " " .. table.concat(escaped_args, " ")
+
+  return "sh", { "-c", "echo '" .. ROOT_NAME .. "' && " .. cmd_str }
 end
 
 local function directories_finder(opts, ctx)
@@ -39,7 +50,6 @@ local function directories_finder(opts, ctx)
   if not cmd then
     return function() end
   end
-
   return require("snacks.picker.source.proc").proc(
     ctx:opts({
       cmd = cmd,
@@ -114,7 +124,10 @@ function M.setup(opts)
   Snacks.picker.sources = Snacks.picker.sources or {}
   Snacks.picker.sources.directories = {
     finder = function(picker_opts, ctx)
-      return directories_finder(vim.tbl_extend("force", picker_opts, { exclude = config.exclude, live = config.live }), ctx)
+      return directories_finder(
+        vim.tbl_extend("force", picker_opts, { exclude = config.exclude, live = config.live }),
+        ctx
+      )
     end,
     format = "file",
     supports_live = true,
@@ -136,7 +149,13 @@ function M.setup(opts)
           completion = "file",
         }, function(input)
           if input then
-            create_files_or_dirs(base_dir, input, { open_file = config.open_file })
+            if base_dir == ROOT_NAME then
+              local cwd = vim.fs.normalize(vim.uv.cwd() or ".")
+              local path = vim.fn.fnamemodify(cwd, ":~:.")
+              create_files_or_dirs(path .. "/", input, { open_file = config.open_file })
+            else
+              create_files_or_dirs(base_dir, input, { open_file = config.open_file })
+            end
           end
           vim.schedule(function()
             vim.cmd("stopinsert")
